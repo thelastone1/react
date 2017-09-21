@@ -1,6 +1,9 @@
 import React from 'react';
 import ContactInfo from './ContactInfo';
 import ContactDetails from './ContactDetails';
+import ContactCreate from './ContactCreate';
+
+import update from 'react-addons-update';
 
 export default class Contact extends React.Component{
   constructor(props){
@@ -18,18 +21,47 @@ export default class Contact extends React.Component{
 
     this.handleChange = this.handleChange.bind(this);
     this.handleClick = this.handleClick.bind(this);
+
+    this.handleCreate = this.handleCreate.bind(this);
+    this.handleRemove = this.handleRemove.bind(this);
+    this.handleEdit = this.handleEdit.bind(this);
   }
 
-  handleChange(e){
+  handleChange(e){ //value값 변경
     this.setState({
       keyword: e.target.value
     });
   }
-  handleClick(key){
+  handleClick(key){ //클릭했을 때, 선택되는 내용 보여줌
     this.setState({
       selectedKey : key
     });
     console.log(key, 'is selected');
+  }
+  handleCreate(contact){
+    this.setState({
+      contactData: update(this.state.contactData, {$push : [contact]})
+    });
+  }
+  handleRemove(){ //parameter를 갖지 않음, selectedKey를 삭제할때 사용
+    if (this.state.selectedKey < 0) {
+      return;
+    }
+    this.setState({
+      contactData : update(this.state.contactData,{$splice : [[this.state.selectedKey,1]]}),
+      selectedKey : -1 //selectedKey를 무효화 한다.
+    });
+  }
+  handleEdit(name,phone){
+    this.setState({
+      contactData: update(this.state.contactData,
+      {
+        [this.state.selectedKey]:{
+          name:{$set : name},
+          phone:{$set : phone}
+        }
+      })
+    });
   }
 
   render(){
@@ -48,13 +80,6 @@ export default class Contact extends React.Component{
       });
     };
 
-    // 위 내용과 같음 - 이건 ES5 기준, 위에껀 ES6기준
-    // var mapToComponent = function mapToComponent(data){
-    //   return data.map(function(contact,i){
-    //     return React.createElement(ContactInfo, {contact : contact, key : i});
-    //   });
-    // };
-
     return(
       <div>
         <h1>Contacts</h1>
@@ -68,7 +93,12 @@ export default class Contact extends React.Component{
         <ContactDetails
           isSelected={this.state.selectedKey != -1}
           contact = {this.state.contactData[this.state.selectedKey]}
-          />
+          onRemove = {this.handleRemove}
+          onEdit = {this.handleEdit}
+        />
+        <ContactCreate
+          onCreate = {this.handleCreate}
+        />
       </div>
     );
   }
