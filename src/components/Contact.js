@@ -27,6 +27,22 @@ export default class Contact extends React.Component{
     this.handleEdit = this.handleEdit.bind(this);
   }
 
+  componentWillMount(){
+    const contactData = localStorage.contactData; // localStorage에서 contactData를 불러온다
+
+    if (contactData) {
+      this.setState({
+        contactData:JSON.parse(contactData)
+      });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState){
+    if (JSON.stringify(prevState.contactData) != JSON.stringify(this.state.contactData)) {
+        localStorage.contactData = JSON.stringify(this.state.contactData);
+    }    //contactData가 지금과 이전값이 다르다면 지금값을 저장
+  }
+
   handleChange(e){ //value값 변경
     this.setState({
       keyword: e.target.value
